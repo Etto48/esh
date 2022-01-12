@@ -6,6 +6,7 @@ namespace esh::Builtins
     {
         {"exit",exit},
         {"cd",cd},
+        {"reload",reload},
     };
     int8_t exit(const std::vector<std::string>& args)
     {
@@ -36,5 +37,22 @@ namespace esh::Builtins
                 perror("cd");
         }
         return ret;
+    }
+    int8_t reload(const std::vector<std::string>& args)
+    {
+        char* const* eargs = {nullptr};
+        if(args.size() > 2)
+            std::cout << "reload: too many arguments" << std::endl;
+        else if(args.size() == 2)
+        {
+            execv(args[1].c_str(),eargs);
+            perror("reload");
+        }
+        else
+        {
+            execvp("esh",eargs);
+            perror("reload");
+        }
+        return -1;
     }
 }

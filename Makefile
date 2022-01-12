@@ -2,7 +2,7 @@ CC 				:=	g++
 
 MODE			:=	DEBUG
 
-DEFINE_LIST		:=	$(MODE)
+DEFINE_LIST		:=	$(MODE) POWERLINE
 CARGS			:=	-Wall $(addprefix -D, $(DEFINE_LIST)) -std=c++2a -lncurses
 
 ifeq ($(MODE),DEBUG)

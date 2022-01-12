@@ -43,7 +43,11 @@ std::string prompt(int8_t status)
     std::string ret = "";
 
     ret += esh::Tools::color("green", nullptr);
+#ifdef POWERLINE
     ret += "";
+#else
+    ret += "(";
+#endif
     ret += esh::Tools::color("white", "green");
 
     // error
@@ -56,7 +60,12 @@ std::string prompt(int8_t status)
 
     ret += ' ';
     ret += esh::Tools::color("green", "white");
-    ret += " ";
+#ifdef POWERLINE
+    ret += "";
+#else
+    ret += ">";
+#endif
+    ret += ' ';
 
     // cwd
     char cwd[FILENAME_MAX] = {0};
@@ -71,7 +80,12 @@ std::string prompt(int8_t status)
     ret += ' ';
     ret += esh::Tools::color(nullptr, nullptr);
     ret += esh::Tools::color("white", nullptr);
-    ret += " ";
+#ifdef POWERLINE
+    ret += "";
+#else 
+    ret += ">";
+#endif
+    ret += ' ';
     ret += esh::Tools::color(nullptr, nullptr);
     return ret;
 }
