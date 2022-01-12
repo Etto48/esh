@@ -29,9 +29,13 @@ namespace esh
                 break;
             case '(':
                 r_brackets ++;
+                next += c;
+                standard_char = true;
                 break;
             case ')':
                 r_brackets --;
+                next += c;
+                standard_char = true;
                 break;
             default:
                 next += c;
@@ -43,11 +47,7 @@ namespace esh
                 error = true;
                 return;
             }
-            else if(r_brackets > 0)
-            {
-                
-            }
-            else if(((qm && c!='\"') || (ap && c!='\'')) && !standard_char)
+            else if(((r_brackets > 0) || (qm && c!='\"') || (ap && c!='\'')) && !standard_char)
                 next += c;
             else if(space && next.size() > 0)
             {
@@ -61,5 +61,9 @@ namespace esh
     const std::vector<std::string>& Parser::getArgs() 
     {
         return this->args;
+    }   
+    Parser::operator bool()
+    {
+        return !error;
     }
 }

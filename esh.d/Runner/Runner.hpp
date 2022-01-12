@@ -6,10 +6,14 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include "../Tools/Tools.hpp"
+#include "Builtins/Builtins.hpp"
+
 
 namespace esh
 {
+    bool wouldRun(std::string command);
     class Runner
     {
     private:

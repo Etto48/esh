@@ -7,22 +7,35 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv, [[maybe_unused
     {
         std::string in;
         std::cout << prompt(status);
-        std::getline(std::cin, in);
+        std::cout << "\033[s";
+        std::flush(std::cout);
+        esh::Input input;
+        size_t last_len = 0;
+        while(!input.next())
+        {
+            std::cout << "\033[u";
+            std::cout << std::string(last_len, ' ');
+            std::cout << "\033[u";
+            esh::Parser tmp_parser{input.getBuf()};
+            std::cout << esh::Tools::color(nullptr,nullptr);
+            std::cout << esh::Tools::color("green",nullptr);
+            if(tmp_parser.getArgs().size() && (!tmp_parser || !esh::wouldRun(tmp_parser.getArgs()[0])))
+                std::cout << esh::Tools::color("red",nullptr);
+            std::cout << input.getBuf() << esh::Tools::color(nullptr,nullptr);
+            std::cout << "\033[u";
+            if(input.getCursor())
+                std::cout << "\033[" << input.getCursor() << 'C';
+            std::flush(std::cout);
+            last_len = input.getBuf().size();
+        }
+        std::cout << std::endl;
+        in = input;
         esh::Parser parser{in};
 
-        if (parser.getArgs()[0] == "exit" && parser.getArgs().size() == 1)
-            break;
-        else if (parser.getArgs()[0] == "cd" && parser.getArgs().size() == 2)
-        {
-            if(chdir(parser.getArgs()[1].c_str())<0)
-                perror("esh");
-        }
-        else
-        {
-            esh::Runner runner{parser.getArgs()};
-            status = runner.wait();
-        }
+        esh::Runner runner{parser.getArgs()};
+        status = runner.wait();
     }
+    return 0;
 }
 
 std::string prompt(int8_t status)

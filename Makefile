@@ -3,7 +3,7 @@ CC 				:=	g++
 MODE			:=	DEBUG
 
 DEFINE_LIST		:=	$(MODE)
-CARGS			:=	-Wall $(addprefix -D, $(DEFINE_LIST)) -std=c++2a
+CARGS			:=	-Wall $(addprefix -D, $(DEFINE_LIST)) -std=c++2a -lncurses
 
 ifeq ($(MODE),DEBUG)
 	CARGS		+=	-ggdb -Wextra -pedantic

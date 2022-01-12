@@ -14,5 +14,6 @@ namespace esh
     public:
         Parser(const std::string& line);
         const std::vector<std::string>& getArgs();
+        operator bool();
     };
 }

@@ -2,6 +2,32 @@
 
 namespace esh
 {
+    bool isExec(struct stat st)
+    {
+        return !(st.st_mode & S_IFDIR) && ((st.st_mode & S_IXOTH) || ((st.st_mode & S_IXUSR) && st.st_uid == getuid()) || ((st.st_mode & S_IXGRP) && st.st_gid == getgid()));
+    }
+    bool wouldRun(std::string command)
+    {
+        struct stat st;
+        if(command.find('/')!=std::string::npos)
+        {
+            return stat(command.c_str(), &st) >= 0 && isExec(st);
+        }
+        for(auto& b : Builtins::functions)
+        {
+            if(command == b.first)
+                return true;
+        }
+        auto path = Tools::strsplit(getenv("PATH"),':');
+        for(auto& p : path)
+        {
+            auto test = p+'/'+command;
+            if(stat(test.c_str(), &st) >=0 && isExec(st))
+                return true;
+        }
+        return false;
+    }
+
     Runner::Runner(const std::vector<std::string>& args)
     {   
         std::vector<char*> cargs;
@@ -10,7 +36,14 @@ namespace esh
         for(size_t i = 0; i < args.size(); ++i)
             cargs.push_back(const_cast<char*>(args[i].c_str()));
         cargs.push_back(nullptr);
-
+        for(auto& b : Builtins::functions)
+        {
+            if(args[0] == b.first)
+            {
+                status = b.second(args);
+                return;
+            }
+        }
         pid = fork();
         if(!pid)
         {
