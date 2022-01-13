@@ -28,17 +28,17 @@ namespace esh
         return false;
     }
 
-    Runner::Runner(const std::vector<std::string>& args)
+    Runner::Runner(const std::vector<std::pair<std::string,size_t>>& args)
     {   
         std::vector<char*> cargs;
         cargs.reserve(args.size()+1);
 
         for(size_t i = 0; i < args.size(); ++i)
-            cargs.push_back(const_cast<char*>(args[i].c_str()));
+            cargs.push_back(const_cast<char*>(args[i].first.c_str()));
         cargs.push_back(nullptr);
         for(auto& b : Builtins::functions)
         {
-            if(args[0] == b.first)
+            if(args[0].first == b.first)
             {
                 status = b.second(args);
                 return;
@@ -61,7 +61,7 @@ namespace esh
                 std::cout << "an error occurred";
                 break;
             }
-            std::cout << ": " << args[0] << std::endl;
+            std::cout << ": " << args[0].first << std::endl;
             exit(-1);
             
         }

@@ -9,8 +9,8 @@
 
 namespace esh::Builtins
 {
-    extern std::vector<std::pair<std::string,std::function<int8_t(const std::vector<std::string>&)>>> functions;
-    int8_t exit(const std::vector<std::string>& args);
-    int8_t cd(const std::vector<std::string>& args);
-    int8_t reload(const std::vector<std::string>& args);
+    extern std::vector<std::pair<std::string,std::function<int8_t(const std::vector<std::pair<std::string,size_t>>&)>>> functions;
+    int8_t exit(const std::vector<std::pair<std::string,size_t>>& args);
+    int8_t cd(const std::vector<std::pair<std::string,size_t>>& args);
+    int8_t reload(const std::vector<std::pair<std::string,size_t>>& args);
 }

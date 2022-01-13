@@ -1,3 +1,5 @@
 .vscode
 *.o
 esh
+.history
+.eshrc

@@ -3,19 +3,24 @@
 #define ARROW_D 'B'
 #define ARROW_R 'C'
 #define ARROW_L 'D'
-#define BKSP 127
-#define DEL 126
-#define ESC 27
+#define HOME    'H'
+#define END     'F'
+#define BKSP    127
+#define DEL     126
+#define ESC     27
+#define CTRL_C  3
 
 namespace esh
 {
+    Input input;
+
     struct termios orig_termios;
     void enableRawMode()
     {
         struct termios raw;
         tcgetattr(STDIN_FILENO, &raw);
         orig_termios = raw;
-        raw.c_lflag &= ~(ECHO | ICANON);
+        raw.c_lflag &= ~(ECHO | ICANON | ISIG | IXON | IEXTEN | ICRNL);
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
     }
 
@@ -27,15 +32,41 @@ namespace esh
     Input::Input()
     {
         enableRawMode();
+        reset();
+        std::ifstream reader{std::string(getenv("HOME"))+"/.esh/.history"};
+        std::string line;
+        while(std::getline(reader,line))
+        {
+            history.push_back(line);
+        }
     }
     Input::~Input()
     {
         disableRawMode();
+        save();
     }
     void Input::reset()
     {
+        if (buf.size())
+        {
+            if (history.back() != buf)
+                history.push_back(buf);
+            while(history.size() > HISTORY_MAX)
+            {
+                history.pop_front();
+            }
+        }
+        history_iterator = history.end();
         buf = "";
         cursor = 0;
+    }
+    void Input::save()
+    {
+        std::ofstream writer{std::string(getenv("HOME"))+"/.esh/.history"};
+        for(auto& h : history)
+        {
+            writer << h << std::endl;
+        }
     }
     bool Input::next()
     {
@@ -44,7 +75,7 @@ namespace esh
         if (read(STDIN_FILENO, &c, 1) == 1)
         {
             //std::cout << "\033[1;" << dbg << "H" << '(' << cursor << ':' << int(c) << ')';
-            //dbg+= 10;
+            //dbg+= 8;
             switch (c)
             {
             case '\n':
@@ -69,30 +100,69 @@ namespace esh
             case ESC:
             {
                 char esc_type;
-                if (read(STDIN_FILENO, &esc_type, 1) == 1 && esc_type == '[')
+                if (read(STDIN_FILENO, &esc_type, 1) == 1)
                 {
-                    char ch[10];
-                    if (read(STDIN_FILENO, ch + 0, 1) == 1)
+                    //std::cout << "\033[1;" << dbg << "H" << '(' << cursor << ':' << int(esc_type) << ')';
+                    //dbg+= 8;
+                    switch (esc_type)
                     {
-                        switch (ch[0])
+                    case '[':
+                    {
+                        char cs;
+                        if (read(STDIN_FILENO, &cs, 1) == 1)
                         {
-                        case ARROW_L:
-                            if (cursor > 0)
-                                cursor--;
-                            break;
-                        case ARROW_R:
-                            if (cursor < buf.size())
-                                cursor++;
-                            break;
-                        case ARROW_U:
-                            break;
-                        case ARROW_D:
-                            break;
+                            // std::cout << "\033[1;" << dbg << "H" << '(' << cursor << ':' << int(cs) << ')';
+                            // dbg+= 8;
+                            switch (cs)
+                            {
+                            case ARROW_L:
+                                if (cursor > 0)
+                                    cursor--;
+                                break;
+                            case ARROW_R:
+                                if (cursor < buf.size())
+                                    cursor++;
+                                break;
+                            case ARROW_U:
+                                if (history_iterator != history.begin())
+                                {
+                                    auto old_iterator = history_iterator--;
+                                    if (old_iterator == history.end() && buf.size())
+                                        history.push_back(buf);
+                                    buf = *history_iterator;
+                                    cursor = buf.size();
+                                }
+                                break;
+                            case ARROW_D:
+                                if (history_iterator != history.end())
+                                {
+                                    history_iterator++;
+                                    if (history_iterator != history.end())
+                                    {
+                                        buf = *history_iterator;
+                                        cursor = buf.size();
+                                    }
+                                    else
+                                        history_iterator--;
+                                }
+                                break;
+                            case END:
+                                cursor = buf.size();
+                                break;
+                            case HOME:
+                                cursor = 0;
+                                break;
+                            }
                         }
+                    }
+                    break;
                     }
                 }
             }
             break;
+            case CTRL_C:
+                reset();
+                break;
             default:
                 buf.insert(buf.begin() + cursor, c);
                 cursor++;
@@ -103,15 +173,11 @@ namespace esh
         else
             return true;
     }
-    Input::operator std::string()
+    std::string Input::getBuf()
     {
         return buf;
     }
-    const std::string &Input::getBuf()
-    {
-        return buf;
-    }
-    const size_t &Input::getCursor()
+    size_t Input::getCursor()
     {
         return cursor;
     }

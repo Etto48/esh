@@ -20,7 +20,7 @@ namespace esh
         int8_t status = 0;
         pid_t pid = 0;
     public:
-        Runner(const std::vector<std::string>& args);
+        Runner(const std::vector<std::pair<std::string,size_t>>& args);
         Runner& wait();
         operator bool();
         operator int8_t();

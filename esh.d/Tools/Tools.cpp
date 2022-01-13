@@ -30,24 +30,31 @@ namespace esh::Tools
         return {};
     }
 
-    int color_helper(const std::string& name)
+    int color_helper(std::string name)
     {
+        bool light = false;
+        if(name.starts_with("light "))
+        {
+            light = true;
+            name.erase(0,6);
+        }
+        int l = (light? 60 : 0);
         if (name == "black")
-            return 0;
+            return l + 0;
         else if (name == "red")
-            return 1;
+            return l + 1;
         else if (name == "green")
-            return 2;
+            return l + 2;
         else if (name == "yellow")
-            return 3;
+            return l + 3;
         else if (name == "blue")
-            return 4;
+            return l + 4;
         else if (name == "purple")
-            return 5;
+            return l + 5;
         else if (name == "cyan")
-            return 6;
+            return l + 6;
         else if (name == "white")
-            return 7;
+            return l + 7;
         else return 0;
     }
     std::string color(const char *fg, const char* bg)

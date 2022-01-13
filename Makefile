@@ -3,10 +3,10 @@ CC 				:=	g++
 MODE			:=	DEBUG
 
 DEFINE_LIST		:=	$(MODE) POWERLINE
-CARGS			:=	-Wall $(addprefix -D, $(DEFINE_LIST)) -std=c++2a -lncurses
+CARGS			:=	-Wall $(addprefix -D, $(DEFINE_LIST)) -std=c++2a
 
 ifeq ($(MODE),DEBUG)
-	CARGS		+=	-ggdb -Wextra -pedantic
+	CARGS		+=	-g -Wextra -pedantic
 else ifeq ($(MODE),RELEASE)
 	CARGS		+=	-O3
 endif

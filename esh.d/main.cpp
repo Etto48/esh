@@ -9,31 +9,55 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv, [[maybe_unused
         std::cout << prompt(status);
         std::cout << "\033[s";
         std::flush(std::cout);
-        esh::Input input;
         size_t last_len = 0;
-        while(!input.next())
+        while(!esh::input.next())
         {
             std::cout << "\033[u";
             std::cout << std::string(last_len, ' ');
             std::cout << "\033[u";
-            esh::Parser tmp_parser{input.getBuf()};
+            esh::Parser tmp_parser{esh::input.getBuf()};
             std::cout << esh::Tools::color(nullptr,nullptr);
-            std::cout << esh::Tools::color("green",nullptr);
-            if(tmp_parser.getArgs().size() && (!tmp_parser || !esh::wouldRun(tmp_parser.getArgs()[0])))
-                std::cout << esh::Tools::color("red",nullptr);
-            std::cout << input.getBuf() << esh::Tools::color(nullptr,nullptr);
+            size_t linen = 0;
+            size_t charn = 0;
+            for(auto& c : esh::input.getBuf())
+            {
+                if(tmp_parser.getArgs().size()>linen && charn == tmp_parser.getArgs()[linen][0].second)
+                {
+                    if(esh::wouldRun(tmp_parser.getArgs()[linen][0].first))
+                    {
+                        std::cout << esh::Tools::color("green",nullptr);
+                    }
+                    else
+                    {
+                        std::cout << esh::Tools::color("light red",nullptr);
+                    }
+                }
+                else if(tmp_parser.getArgs().size()>linen && charn == tmp_parser.getArgs()[linen][0].second + tmp_parser.getArgs()[linen][0].first.size())
+                {
+                    std::cout << esh::Tools::color(nullptr,nullptr);
+                    linen++;
+                }
+                std::cout << c;
+                charn ++;
+            }
+            std::cout << esh::Tools::color(nullptr,nullptr);
             std::cout << "\033[u";
-            if(input.getCursor())
-                std::cout << "\033[" << input.getCursor() << 'C';
+            if(esh::input.getCursor())
+                std::cout << "\033[" << esh::input.getCursor() << 'C';
             std::flush(std::cout);
-            last_len = input.getBuf().size();
+            last_len = esh::input.getBuf().size();
         }
         std::cout << std::endl;
-        in = input;
+        in = esh::input.getBuf();
         esh::Parser parser{in};
+        
+        esh::input.reset();
 
-        esh::Runner runner{parser.getArgs()};
-        status = runner.wait();
+        for(auto& a : parser.getArgs())
+        {
+            esh::Runner runner{a};
+            status = runner.wait();
+        }
     }
     return 0;
 }
@@ -51,7 +75,7 @@ std::string prompt(int8_t status)
     ret += esh::Tools::color("white", "green");
 
     // error
-    ret += esh::Tools::color("red", "green");
+    ret += esh::Tools::color("light red", "green");
     ret += status ? "x " : "";
     ret += esh::Tools::color("white", "green");
 
@@ -69,7 +93,8 @@ std::string prompt(int8_t status)
 
     // cwd
     char cwd[FILENAME_MAX] = {0};
-    getcwd(cwd, FILENAME_MAX);
+    if(!getcwd(cwd, FILENAME_MAX))
+        strcpy(cwd,"?");
     char *home = getenv("HOME");
     if (strncmp(cwd, home, strlen(home)) == 0)
         ret += std::string{"~"} + (cwd + strlen(home));
