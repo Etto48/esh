@@ -6,6 +6,9 @@
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/stat.h>
+
+#include "../../Tools/Tools.hpp"
 
 namespace esh::Builtins
 {
@@ -13,4 +16,6 @@ namespace esh::Builtins
     int8_t exit(const std::vector<std::pair<std::string,size_t>>& args);
     int8_t cd(const std::vector<std::pair<std::string,size_t>>& args);
     int8_t reload(const std::vector<std::pair<std::string,size_t>>& args);
+    int8_t where(const std::vector<std::pair<std::string,size_t>>& args);
+    int8_t builtin(const std::vector<std::pair<std::string,size_t>>& args);
 }

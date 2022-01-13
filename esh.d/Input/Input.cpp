@@ -3,12 +3,12 @@
 #define ARROW_D 'B'
 #define ARROW_R 'C'
 #define ARROW_L 'D'
-#define HOME    'H'
-#define END     'F'
-#define BKSP    127
-#define DEL     126
-#define ESC     27
-#define CTRL_C  3
+#define HOME 'H'
+#define END 'F'
+#define BKSP 127
+#define DEL 126
+#define ESC 27
+#define CTRL_C 3
 
 namespace esh
 {
@@ -33,9 +33,9 @@ namespace esh
     {
         enableRawMode();
         reset();
-        std::ifstream reader{std::string(getenv("HOME"))+"/.esh/.history"};
+        std::ifstream reader{std::string(getenv("HOME")) + "/.esh/.history"};
         std::string line;
-        while(std::getline(reader,line))
+        while (std::getline(reader, line))
         {
             history.push_back(line);
         }
@@ -49,9 +49,14 @@ namespace esh
     {
         if (buf.size())
         {
-            if (history.back() != buf)
+            if (history_iterator == history.end() && history.back() != buf)
                 history.push_back(buf);
-            while(history.size() > HISTORY_MAX)
+            else if (history_iterator != history.end() && history.back() != buf)
+            {
+                history.erase(history_iterator);
+                history.push_back(buf);
+            }
+            while (history.size() > HISTORY_MAX)
             {
                 history.pop_front();
             }
@@ -62,8 +67,8 @@ namespace esh
     }
     void Input::save()
     {
-        std::ofstream writer{std::string(getenv("HOME"))+"/.esh/.history"};
-        for(auto& h : history)
+        std::ofstream writer{std::string(getenv("HOME")) + "/.esh/.history"};
+        for (auto &h : history)
         {
             writer << h << std::endl;
         }
@@ -71,11 +76,11 @@ namespace esh
     bool Input::next()
     {
         char c;
-        //static int dbg = 0;
+        // static int dbg = 0;
         if (read(STDIN_FILENO, &c, 1) == 1)
         {
-            //std::cout << "\033[1;" << dbg << "H" << '(' << cursor << ':' << int(c) << ')';
-            //dbg+= 8;
+            // std::cout << "\033[1;" << dbg << "H" << '(' << cursor << ':' << int(c) << ')';
+            // dbg+= 8;
             switch (c)
             {
             case '\n':
@@ -87,12 +92,14 @@ namespace esh
                 {
                     cursor--;
                     buf.erase(cursor, 1);
+                    history_iterator = history.end();
                 }
                 break;
             case DEL:
                 if (buf.size() && cursor < buf.size())
                 {
                     buf.erase(cursor, 1);
+                    history_iterator = history.end();
                 }
                 break;
             case char(0x80 | ARROW_L):
@@ -102,8 +109,8 @@ namespace esh
                 char esc_type;
                 if (read(STDIN_FILENO, &esc_type, 1) == 1)
                 {
-                    //std::cout << "\033[1;" << dbg << "H" << '(' << cursor << ':' << int(esc_type) << ')';
-                    //dbg+= 8;
+                    // std::cout << "\033[1;" << dbg << "H" << '(' << cursor << ':' << int(esc_type) << ')';
+                    // dbg+= 8;
                     switch (esc_type)
                     {
                     case '[':
@@ -161,10 +168,13 @@ namespace esh
             }
             break;
             case CTRL_C:
-                reset();
+                history_iterator = history.end();
+                buf = "";
+                cursor = 0;
                 break;
             default:
                 buf.insert(buf.begin() + cursor, c);
+                history_iterator = history.end();
                 cursor++;
                 break;
             }

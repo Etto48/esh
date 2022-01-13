@@ -6,7 +6,7 @@
 
 namespace esh::Tools
 {
-    std::vector<std::string> strsplit(const std::string& str, char split_on);
+    __attribute__((const)) std::vector<std::string> strsplit(const std::string &str, char split_on);
     std::string getUserName();
-    std::string color(const char *fg, const char* bg);
+    __attribute__((const)) std::string color(const char *fg, const char *bg);
 }

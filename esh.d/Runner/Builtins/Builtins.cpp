@@ -7,6 +7,8 @@ namespace esh::Builtins
         {"exit",exit},
         {"cd",cd},
         {"reload",reload},
+        {"where",where},
+        {"builtin",builtin},
     };
     int8_t exit(const std::vector<std::pair<std::string,size_t>>& args)
     {
@@ -53,6 +55,68 @@ namespace esh::Builtins
             execvp((std::string(getenv("HOME"))+"/.esh/esh").c_str(),eargs);
             perror("reload");
         }
+        return -1;
+    }
+    int8_t where(const std::vector<std::pair<std::string,size_t>>& args)
+    {
+        if(args.size() > 2)
+        {
+            std::cout << "where: too many arguments" << std::endl;
+            return -1;
+        }
+        if(args.size() != 2)
+        {
+            return -1;
+        }
+        bool found = false;
+        struct stat st;
+        if (args[1].first.find('/') != std::string::npos)
+        {
+            if (stat(args[1].first.c_str(), &st) >= 0 && !(st.st_mode & S_IFDIR))
+            {
+                std::cout << args[1].first << std::endl;
+                found = true;
+            }
+        }
+        for (auto &b : Builtins::functions)
+        {
+            if (args[1].first == b.first)
+            {
+                std::cout << args[1].first << ": shell built-in command" << std::endl;
+                found = true;
+            }
+        }
+        auto path = Tools::strsplit(getenv("PATH"), ':');
+        for (auto &p : path)
+        {
+            auto test = p + '/' + args[1].first;
+            if (stat(test.c_str(), &st) >= 0 && !(st.st_mode & S_IFDIR))
+            {
+                std::cout << test << std::endl;
+                found = true;
+            }
+        }
+        if(found)
+            return 0;
+        else
+        {
+            std::cout << args[1].first << " not found" << std::endl;
+            return -1;
+        }
+    }
+    int8_t builtin(const std::vector<std::pair<std::string,size_t>>& args)
+    {
+        if (args.size()<2) return 0;
+        for(auto& b : Builtins::functions)
+        {
+            if(args[1].first == b.first)
+            {
+                auto b_args = args;
+                b_args.erase(b_args.begin());
+                return b.second(b_args);
+            }
+        }
+        std::cout << "esh: no such builtin: " << args[1].first << std::endl;
         return -1;
     }
 }

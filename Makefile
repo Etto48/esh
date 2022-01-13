@@ -8,7 +8,7 @@ CARGS			:=	-Wall $(addprefix -D, $(DEFINE_LIST)) -std=c++2a
 ifeq ($(MODE),DEBUG)
 	CARGS		+=	-g -Wextra -pedantic
 else ifeq ($(MODE),RELEASE)
-	CARGS		+=	-O3
+	CARGS		+=	-Ofast
 endif
 
 CFILES			:= 	$(shell find ./ -name "*.cpp")

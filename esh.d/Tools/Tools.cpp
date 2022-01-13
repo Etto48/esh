@@ -2,16 +2,16 @@
 
 namespace esh::Tools
 {
-    std::vector<std::string> strsplit(const std::string& str, char split_on)
+    __attribute__((const)) std::vector<std::string> strsplit(const std::string &str, char split_on)
     {
         std::vector<std::string> ret;
         std::string next = "";
-        for(auto& c : str)
+        for (auto &c : str)
         {
-            if(c==split_on && next.size()>0)
+            if (c == split_on && next.size() > 0)
             {
-                    ret.push_back(next);
-                    next = "";
+                ret.push_back(next);
+                next = "";
             }
             else
                 next += c;
@@ -30,15 +30,15 @@ namespace esh::Tools
         return {};
     }
 
-    int color_helper(std::string name)
+    __attribute__((const)) int color_helper(std::string name)
     {
         bool light = false;
-        if(name.starts_with("light "))
+        if (name.starts_with("light "))
         {
             light = true;
-            name.erase(0,6);
+            name.erase(0, 6);
         }
-        int l = (light? 60 : 0);
+        int l = (light ? 60 : 0);
         if (name == "black")
             return l + 0;
         else if (name == "red")
@@ -55,28 +55,30 @@ namespace esh::Tools
             return l + 6;
         else if (name == "white")
             return l + 7;
-        else return 0;
+        else
+            return 0;
     }
-    std::string color(const char *fg, const char* bg)
+    __attribute__((const)) std::string color(const char *fg, const char *bg)
     {
-        
-        if(fg || bg)
+
+        if (fg || bg)
         {
             std::string ret = "\033[";
-            if(fg && !bg)
+            if (fg && !bg)
             {
-                ret += std::to_string(30+color_helper(fg));
+                ret += std::to_string(30 + color_helper(fg));
             }
-            else if( !fg && bg)
+            else if (!fg && bg)
             {
-                ret += std::to_string(40+color_helper(bg));
+                ret += std::to_string(40 + color_helper(bg));
             }
             else
             {
-                ret += std::to_string(30+color_helper(fg)) + ";" + std::to_string(40+color_helper(bg));
+                ret += std::to_string(30 + color_helper(fg)) + ";" + std::to_string(40 + color_helper(bg));
             }
             return ret + 'm';
         }
-        else return "\033[0m";
+        else
+            return "\033[0m";
     }
 }

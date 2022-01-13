@@ -2,15 +2,15 @@
 
 namespace esh
 {
-    Parser::Parser(const std::string& line)
+    Parser::Parser(const std::string &line)
     {
         size_t cursor = 0;
         int r_brackets = 0;
         bool qm = false;
         bool ap = false;
-        std::vector<std::pair<std::string,size_t>> new_args;
-        std::pair<std::string,size_t> next = {"",0};
-        for(auto& c : line)
+        std::vector<std::pair<std::string, size_t>> new_args;
+        std::pair<std::string, size_t> next = {"", 0};
+        for (auto &c : line)
         {
             bool standard_char = false;
             bool space = false;
@@ -18,12 +18,12 @@ namespace esh
             {
             case '\n':
             case ';':
-                if((!ap && !qm && r_brackets==0 ) &&  (next.first.size() || new_args.size()))
-                {//we add a new command to the line
-                    if(next.first.size())
+                if ((!ap && !qm && r_brackets == 0) && (next.first.size() || new_args.size()))
+                { // we add a new command to the line
+                    if (next.first.size())
                     {
                         new_args.push_back(next);
-                        next = {"",cursor+1};
+                        next = {"", cursor + 1};
                     }
                     args.push_back(new_args);
                     new_args = {};
@@ -35,20 +35,20 @@ namespace esh
                 space = true;
                 break;
             case '\"':
-                if(!ap)
+                if (!ap)
                     qm = !qm;
                 break;
             case '\'':
-                if(!qm)
+                if (!qm)
                     ap = !ap;
                 break;
             case '(':
-                r_brackets ++;
+                r_brackets++;
                 next.first += c;
                 standard_char = true;
                 break;
             case ')':
-                r_brackets --;
+                r_brackets--;
                 next.first += c;
                 standard_char = true;
                 break;
@@ -62,30 +62,30 @@ namespace esh
                 error = true;
                 return;
             }
-            else if(((r_brackets > 0) || (qm && c!='\"') || (ap && c!='\'')) && !standard_char)
+            else if (((r_brackets > 0) || (qm && c != '\"') || (ap && c != '\'')) && !standard_char)
             {
                 next.first += c;
             }
-            else if(space && next.first.size() > 0)
+            else if (space && next.first.size() > 0)
             {
                 new_args.push_back(next);
-                next = {"",cursor+1};
+                next = {"", cursor + 1};
             }
-            else if(space)
+            else if (space)
             {
-                next = {"",cursor+1};
+                next = {"", cursor + 1};
             }
-            cursor ++;
+            cursor++;
         }
-        if(next.first.size() > 0)
+        if (next.first.size() > 0)
             new_args.push_back(next);
-        if(new_args.size() > 0)
+        if (new_args.size() > 0)
             args.push_back(new_args);
     }
-    const std::vector<std::vector<std::pair<std::string,size_t>>>& Parser::getArgs() 
+    const std::vector<std::vector<std::pair<std::string, size_t>>> &Parser::getArgs()
     {
         return this->args;
-    }   
+    }
     Parser::operator bool()
     {
         return !error;

@@ -6,6 +6,5 @@
 #include "Runner/Runner.hpp"
 #include "Input/Input.hpp"
 
-
-int main(int argc, char** argv, char** env);
+int main(int argc, char **argv, char **env);
 std::string prompt(int8_t status);

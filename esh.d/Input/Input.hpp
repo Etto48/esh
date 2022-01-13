@@ -16,6 +16,7 @@ namespace esh
         std::list<std::string>::iterator history_iterator;
         std::string buf;
         size_t cursor = 0;
+
     public:
         Input();
         ~Input();
@@ -25,9 +26,8 @@ namespace esh
         std::string getBuf();
         size_t getCursor();
 
-        friend std::ostream& operator <<(std::ostream& os, const Input& in);
+        friend std::ostream &operator<<(std::ostream &os, const Input &in);
     };
 
     extern Input input;
 }
-
