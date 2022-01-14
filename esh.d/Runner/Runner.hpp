@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
@@ -18,10 +20,12 @@ namespace esh
     private:
         int8_t status = 0;
         pid_t pid = 0;
-
+        std::string output;
+        int pipes[2] = {0,0};
     public:
-        Runner(std::vector<std::pair<std::string, size_t>> args);
+        Runner(std::vector<std::pair<std::string, size_t>> args, bool pipe = false);
         Runner &wait();
+        const std::string& getOutput();
         operator bool();
         operator int8_t();
     };

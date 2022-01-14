@@ -5,6 +5,7 @@
 #include <vector>
 #include <utility>
 
+#include "../Runner/Runner.hpp"
 namespace esh
 {
     class Parser
@@ -16,6 +17,7 @@ namespace esh
     public:
         Parser(const std::string &line);
         const std::vector<std::vector<std::pair<std::string, size_t>>> &getArgs();
+        void postProcess();
         operator bool();
     };
 }

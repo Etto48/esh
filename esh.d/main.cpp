@@ -53,6 +53,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv, [[maybe_unused
 
         esh::input.reset();
 
+        parser.postProcess();
         for (auto &a : parser.getArgs())
         {
             esh::Runner runner{a};

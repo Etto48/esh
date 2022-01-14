@@ -28,16 +28,8 @@ namespace esh
         return false;
     }
 
-    Runner::Runner(std::vector<std::pair<std::string, size_t>> args)
+    Runner::Runner(std::vector<std::pair<std::string, size_t>> args, bool pipe)
     {
-        for (auto &a : args)
-        {
-            if(a.first.size()>1 && a.first[0] == '$' && a.first[1] != '(')
-            {
-                a.first.erase(a.first.begin());
-                a.first = getenv(a.first.c_str());
-            }
-        }
         for (auto &b : Builtins::functions)
         {
             if (args[0].first == b.first)
@@ -52,9 +44,28 @@ namespace esh
             cargs.push_back(const_cast<char *>(args[i].first.c_str()));
         cargs.push_back(nullptr);
 
+        if(pipe)
+        {
+            if(::pipe(pipes) < 0)
+            {
+                perror("pipe");
+                return;
+            }
+        }
+
         pid = fork();
+        if(pid<0)
+        {
+            perror("fork");
+            return;
+        }
         if (!pid)
         {
+            if(pipe)
+            {
+                close(pipes[0]);//child does not read
+                dup2(pipes[1],1);//set new stdout
+            }
             execvp(cargs[0], &cargs[0]);
             std::cout << "esh: ";
             switch (errno)
@@ -72,12 +83,28 @@ namespace esh
             std::cout << ": " << args[0].first << std::endl;
             exit(-1);
         }
+        else if(pipe)
+            close(pipes[1]); // parent does not write
+    }
+
+    const std::string& Runner::getOutput()
+    {
+        return output;
     }
 
     Runner &Runner::wait()
     {
         if (pid > 0)
         {
+            if(pipes[0]) // we have to save the output
+            {
+                char reading;
+                while(read(pipes[0], &reading, 1) > 0)
+                {
+                    output += reading;
+                }
+                close(pipes[0]);
+            }
             int full_status;
             if (waitpid(pid, &full_status, 0) != pid)
                 status = -1;

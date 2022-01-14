@@ -86,6 +86,43 @@ namespace esh
     {
         return this->args;
     }
+    void Parser::postProcess()
+    {
+        for(auto& line : args)
+        {
+            for(auto& arg : line)
+            {
+                if(arg.first[0] == '$')
+                { // must be expanded
+                    if(arg.first.size() >= 2 && arg.first[1] != '(')
+                    { // env expansion
+                        arg.first.erase(arg.first.begin());
+                        if(arg.first[1] != '$') // if equal, it was escaped
+                            arg.first = getenv(arg.first.c_str());
+                    }
+                    else if(arg.first.size() >= 3 && arg.first[1] == '(' && arg.first.back() == ')')
+                    { // command expansion
+                        arg.first.erase(arg.first.begin(),arg.first.begin()+2);
+                        arg.first.erase(arg.first.begin()+arg.first.size()-1);
+                        Parser subcommand{arg.first};
+                        subcommand.postProcess();
+                        std::string output;
+                        std::vector<Runner> expanders;
+                        for(auto& expanding_line : subcommand.getArgs())
+                            expanders.emplace_back(expanding_line,true);
+                        for(auto& e : expanders)
+                        {
+                            e.wait();
+                            output += e.getOutput();
+                            if (output.size() > 0 && output.back() == '\n')
+                                output.back() = ' ';
+                        }
+                        arg.first = output; //run subcommand
+                    }
+                }
+            }
+        }
+    }
     Parser::operator bool()
     {
         return !error;
