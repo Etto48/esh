@@ -2,7 +2,7 @@
 
 namespace esh::Builtins
 {
-    std::vector<std::pair<std::string,std::function<int8_t(const std::vector<std::pair<std::string,size_t>>&)>>> functions = 
+    std::vector<std::pair<std::string,std::function<int8_t(const args_t&, std::ostream&)>>> functions = 
     {
         {"exit",exit},
         {"cd",cd},
@@ -10,22 +10,22 @@ namespace esh::Builtins
         {"where",where},
         {"builtin",builtin},
     };
-    int8_t exit(const std::vector<std::pair<std::string,size_t>>& args)
+    int8_t exit(const args_t& args, std::ostream& os)
     {
         if(args.size() > 2)
-            std::cout << "exit: too many arguments" << std::endl;
+            os << "exit: too many arguments" << std::endl;
         else if(args.size() == 2)
             ::exit(std::atoi(args[1].first.c_str()));
         else
             ::exit(0);
         return -1;
     }
-    int8_t cd(const std::vector<std::pair<std::string,size_t>>& args)
+    int8_t cd(const args_t& args, std::ostream& os)
     {
         int8_t ret = 0;
         if(args.size() > 2)
         {
-            std::cout << "cd: too many arguments" << std::endl;
+            os << "cd: too many arguments" << std::endl;
             ret = -1;
         }
         else if(args.size() == 2)
@@ -40,11 +40,11 @@ namespace esh::Builtins
         }
         return ret;
     }
-    int8_t reload(const std::vector<std::pair<std::string,size_t>>& args)
+    int8_t reload(const args_t& args, std::ostream& os)
     {
         char* eargs[] = {nullptr};
         if(args.size() > 2)
-            std::cout << "reload: too many arguments" << std::endl;
+            os << "reload: too many arguments" << std::endl;
         else if(args.size() == 2)
         {
             execv(args[1].first.c_str(),eargs);
@@ -57,11 +57,11 @@ namespace esh::Builtins
         }
         return -1;
     }
-    int8_t where(const std::vector<std::pair<std::string,size_t>>& args)
+    int8_t where(const args_t& args, std::ostream& os)
     {
         if(args.size() > 2)
         {
-            std::cout << "where: too many arguments" << std::endl;
+            os << "where: too many arguments" << std::endl;
             return -1;
         }
         if(args.size() != 2)
@@ -74,7 +74,7 @@ namespace esh::Builtins
         {
             if (stat(args[1].first.c_str(), &st) >= 0 && !(st.st_mode & S_IFDIR))
             {
-                std::cout << args[1].first << std::endl;
+                os << args[1].first << std::endl;
                 found = true;
             }
         }
@@ -82,7 +82,7 @@ namespace esh::Builtins
         {
             if (args[1].first == b.first)
             {
-                std::cout << args[1].first << ": shell built-in command" << std::endl;
+                os << args[1].first << ": shell built-in command" << std::endl;
                 found = true;
             }
         }
@@ -92,7 +92,7 @@ namespace esh::Builtins
             auto test = p + '/' + args[1].first;
             if (stat(test.c_str(), &st) >= 0 && !(st.st_mode & S_IFDIR))
             {
-                std::cout << test << std::endl;
+                os << test << std::endl;
                 found = true;
             }
         }
@@ -100,11 +100,11 @@ namespace esh::Builtins
             return 0;
         else
         {
-            std::cout << args[1].first << " not found" << std::endl;
+            os << args[1].first << " not found" << std::endl;
             return -1;
         }
     }
-    int8_t builtin(const std::vector<std::pair<std::string,size_t>>& args)
+    int8_t builtin(const args_t& args, std::ostream& os)
     {
         if (args.size()<2) return 0;
         for(auto& b : Builtins::functions)
@@ -113,10 +113,10 @@ namespace esh::Builtins
             {
                 auto b_args = args;
                 b_args.erase(b_args.begin());
-                return b.second(b_args);
+                return b.second(b_args, os);
             }
         }
-        std::cout << "esh: no such builtin: " << args[1].first << std::endl;
+        os << "esh: no such builtin: " << args[1].first << std::endl;
         return -1;
     }
 }

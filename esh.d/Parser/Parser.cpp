@@ -114,9 +114,9 @@ namespace esh
                         {
                             e.wait();
                             output += e.getOutput();
-                            if (output.size() > 0 && output.back() == '\n')
-                                output.back() = ' ';
                         }
+                        std::replace(output.begin(),output.end(),'\n',' ');
+
                         arg.first = output; //run subcommand
                     }
                 }

@@ -34,7 +34,10 @@ namespace esh
         {
             if (args[0].first == b.first)
             {
-                status = b.second(args);
+                std::stringstream sstream;           
+                std::ostream& stream = pipe ? sstream : std::cout;
+                status = b.second(args,stream);
+                output = sstream.str();
                 return;
             }
         }
@@ -44,6 +47,7 @@ namespace esh
             cargs.push_back(const_cast<char *>(args[i].first.c_str()));
         cargs.push_back(nullptr);
 
+        
         if(pipe)
         {
             if(::pipe(pipes) < 0)
